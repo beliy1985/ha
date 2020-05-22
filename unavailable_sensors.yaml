@@ -1,0 +1,34 @@
+######### Unavailable Sensors #########   
+######### Создаем группу с именем: unavailable_blacklist  и добавляем туда исключения  #########   
+- platform: template
+  sensors:
+      unavailable_sensors:
+        entity_id: sensor.time
+        friendly_name_template: >
+          {% if states('sensor.unavailable_sensors') | int == 0 %}
+            Sensors All Available
+          {% else %}
+            Sensors Are Unavailable
+          {% endif %}
+        icon_template: >-
+          {% if states('sensor.unavailable_sensors') | int == 0 %}
+            mdi:wifi
+          {% else %}
+            mdi:wifi-off
+          {% endif %}
+        value_template: >
+          {{states|selectattr('state', 'in', ['unavailable','unknown','none'])
+            |reject('in', expand('group.unavailable_blacklist'))
+            |reject('eq', states.group.unavailable_blacklist)
+            |list|length}}
+        attribute_templates:
+          name: >
+            {{states|selectattr('state', 'in', ['unavailable','unknown','none'])
+              |reject('in', expand('group.unavailable_blacklist'))
+              |reject('eq' , states.group.unavailable_blacklist)
+              |map(attribute='name')|list|join(',\n')}}             
+          entity_id: >
+            {{states|selectattr('state', 'in', ['unavailable','unknown','none'])
+              |reject('in', expand('group.unavailable_blacklist'))
+              |reject('eq' , states.group.unavailable_blacklist)
+              |map(attribute='entity_id')|list|join(',\n')}}        
